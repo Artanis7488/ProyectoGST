@@ -1,0 +1,216 @@
+
+{% extends 'base.html' %}
+
+{% load static %}    
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/categories.css' %}">
+
+<style>
+    #cabecera,#navegador,#principal { padding: 0; margin: auto; text-align: center  }
+    #cabecera { background-color: #062536; }  
+    h1 { font: bold 1.5em arial; padding: 0.5em; }
+    #navegador { background-color: #0d1338; padding: 0.5em; }
+    #navegador li { margin: 0px 5px; padding: 0.1em 1em 0.5em 1em; 
+               background-color: #0b3953; width: 12%;float: left;
+               list-style-type: none; position: relative; }
+    #subseccion1, #subseccion2, #subseccion3, #subseccion4 
+                 { position: absolute; top: 100%; left: 0px;  
+                 background-color: #082c3f; font:normal 0.8em arial;  
+                 padding: 0.2em 0.5em ; display: none; }				 
+    #navegador li:hover { background-color: #194963; }
+    #navegador li a:link, #navegador li a:visited { 
+               color: #feffe4; text-decoration: none; }
+    #navegador li a:hover, #navegador li a:active { 
+               color:#ffd7a9 ; text-decoration: none; }
+    .borrar { clear: both; }	
+    
+    #principal h2 { font: bold 1.5em arial; padding: 0.5em }
+    #principal p { font: normal 0.9em arial; text-align: justify;
+               text-indent: 3em; padding: 0.5em 2em; }
+    </style>
+    <style>
+      .all-browsers {
+        margin: 0;
+        padding: 5px;
+        background-color: rgb(6, 33, 110);
+      }
+      
+      .all-browsers > h1, .browser {
+        margin: 10px;
+        padding: 5px;
+      }
+      
+      .browser {
+        background: rgb(22, 181, 209);
+      }
+      
+      .browser > h2, p {
+        margin: 4px;
+        font-size: 90%;
+      }
+      .li-style-none{
+        list-style-type: none;
+        font-weight: bold;
+        font-size:20px;
+      }
+      .modal{
+          background-color:transparent !important;
+          box-shadow:none !important;
+      }
+      </style>
+      
+
+<script type="text/javascript">
+function ver(n) {
+            document.getElementById("subseccion"+n).style.display="block"
+            }
+function ocultar(n) {
+            document.getElementById("subseccion"+n).style.display="none"
+            }
+</script>
+{% endblock %}
+
+{% block content %}
+  
+<div id="cabecera">
+    <h4 class='p-4 mt-0' style='color:white;'>Mis cursos inscritos</h4>
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-inscription" data-whatever="@mdo">Inscribete a un Curso</button>
+
+</div>
+  <div id="navegador">
+    <ul>
+    {% for course in course_inscription %}
+      <li id="seccion1" onmouseover="ver(1)" onmouseout="ocultar(1)">
+        <a href="#{{ course.id }}" name='{{ course.id }}' title="Enlace genérico">{{ course.title }}</a>        
+      </li>
+      {% endfor %}             
+    </ul>
+    <div class="borrar"></div>
+  </div>
+  <div id="principal" class="row d-flex justify-content-center" >
+    
+    <h2>Curso Inscritos</h2>
+    {% if messages %}
+      <div class="alert alert-danger" role="alert">
+        {% for message in messages %}
+          {{ message.message }}      
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% for course in course_inscription %}
+    <div id='{{ course.id }}' class='col-lg-6 col-sm-8 d-flex justify-content-center p-4'>
+        <div>
+            <li class="li-style-none">
+                <div class="alert alert-info mb-0" role="alert">
+                    {{ course.title }}
+                  </div>                
+            </li>
+            {% if course.picture is not null %}
+              {% if course.picture == '' %}
+                  <img src="https://wallpaperboat.com/wp-content/uploads/2020/09/14/54601/books-01.jpg" alt="blog-img-2" class="img-fluid">
+              {% else %}
+                  <img src="{{course.picture.url}}" alt="blog-img-2" class="img-fluid">
+              {% endif %}
+          {% else %}
+            <img src="https://wallpaperboat.com/wp-content/uploads/2020/09/14/54601/books-01.jpg" alt="blog-img-2" class="img-fluid">
+          {% endif %}
+            <li class="li-style-none">
+              <a href="{% url 'show_posts' course.id  %}" class="btn alert alert-success mb-0" role="alert">
+                  Ver curso
+              </a>
+              <button class="btn btn-info btn-send-code btn-course-users" data-bs-toggle="modal" data-bs-target="#modal-users" data-whatever="@mdo" data-courseid="{{course.id}}" style="background-color:#87CEEB"> ALUMNOS </button>
+            </li>
+
+        </div>
+    </div>
+    {% endfor %}     
+    <p>Consulte los cursos que desee, revise la informacion de los mismos y gestione mejor su tiempo con FISIversity</p>
+  </div>
+
+
+  <div class="modal fade" id="modal-inscription" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+    <form method='POST' action="{% url 'inscription_process' %}" >
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          {% comment %} <h5 class="modal-title" id="exampleModalLabel">Completa uno de los campos solicitados</h5> {% endcomment %}
+          <h5 class="modal-title" id="exampleModalLabel">Completa el campo solicitado</h5>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+              <label for="recipient-name" class="col-form-label">Inserte Codigo:</label>
+              <input type="text" name='code_inscription' required maxlength='400' class="form-control" id="recipient-name">
+            </div>
+            {% comment %} <div class="form-group">
+              <label for="message-text" class="col-form-label">Inserte Link:</label>
+              <textarea class="form-control" id="message-text"></textarea>
+            </div> {% endcomment %}
+        </div>
+        <div class="modal-footer">
+          <button type="button" style="background-color:red" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Inscribirse</button>
+        </div>
+      </div>
+    </form>
+
+    </div>
+  </div>
+
+
+
+<div class="modal fade" id="modal-users" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Alumnos matriculados</h5>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <div id="input-user">
+                {% comment %} usuarios aqui {% endcomment %}
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" style="background-color:green" class="btn btn-success" data-bs-dismiss="modal">De acuerdo</button>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+
+<script>
+    $('.btn-course-users').click(function(){
+        let courseCode = $(this).data('courseid');
+        let url = document.location.origin + '/course/' + courseCode + '/users/';
+
+        $.get(url,function(data, status){
+            users = data.users;
+
+            let inner = '';
+
+            if(users.length <= 0){
+                inner += "<h6 style='text-muted'>Aún no hay alumnos matriculados</h6>";
+            }
+
+            for(let index in users){
+                inner += "<div style='overflow: auto'><img src='"+ users[index].picture + "'"+
+                        "style='border-radius:50%; width :40px; height: 40px'>"+
+                        "<input placeholder='"+ users[index].first_name +" "+ users[index].last_name +"' type='text' disabled name='code_inscription' required maxlength='400' class='form-control input-copy-code' id='recipient-name' style='float:right; width:85%'></div>";
+            }
+
+            $('#input-user').html(inner);
+        });
+    
+    });
+</script>
+ 
+{% endblock %}
